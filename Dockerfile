@@ -1,19 +1,18 @@
-FROM ubuntu:16.04
+FROM debian:stable-slim
 
-MAINTAINER juanmottesi
+WORKDIR /tmp
 
-RUN dpkg --add-architecture i386
-RUN apt-get -y update
-RUN apt-get -y install libx11-6:i386 libgl1-mesa-glx:i386 libfontconfig1:i386 libssl1.0.0:i386 curl wget unzip
+RUN set -ex \
+&& buildDeps='unzip curl wget nano' \
+&& runtimeDeps='ca-certificates libfreetype6:i386 libssh2-1:i386 libssl1.0.2:i386 libstdc++6:i386' \
+&& dpkg --add-architecture i386 \
+&& apt-get update \
+&& apt-get --assume-yes --no-install-recommends install $buildDeps $runtimeDeps \
+&& mkdir --parents /opt/pharo \
+&& cd /opt/pharo \
+&& wget -O- get.pharo.org | bash
 
-#Download Pharo
-RUN wget -O- get.pharo.org/64 | bash
-
-#Add st's
-ADD ./*.st ./
-
-#Installing st
-RUN ./pharo Pharo.image st --save --quit ./startingPharo.st
+WORKDIR /opt/pharo
 
 #End
 RUN echo "Installed!!"
